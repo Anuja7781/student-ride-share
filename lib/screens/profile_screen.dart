@@ -45,9 +45,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("My Profile"),
-        backgroundColor: const Color(0xFF243B6B),
+        backgroundColor: Colors.blue,
       ),
-
+      backgroundColor: Colors.blue.shade50,
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : userData == null
@@ -114,7 +114,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: Colors.blue.shade100,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
