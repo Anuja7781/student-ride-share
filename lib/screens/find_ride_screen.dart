@@ -11,11 +11,13 @@ class FindRideScreen extends StatefulWidget {
 }
 
 class _FindRideScreenState extends State<FindRideScreen> {
-
   bool girlsOnly = false;
 
   TextEditingController fromController = TextEditingController();
   TextEditingController toController = TextEditingController();
+
+  String fromSearch = "";
+  String toSearch = "";
 
   @override
   void dispose() {
@@ -24,15 +26,21 @@ class _FindRideScreenState extends State<FindRideScreen> {
     super.dispose();
   }
 
+  void performSearch() {
+    setState(() {
+      fromSearch = fromController.text.trim().toLowerCase();
+      toSearch = toController.text.trim().toLowerCase();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-
     String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Find Ride"),
-        backgroundColor: const Color(0xFF243B6B),
+        backgroundColor: Colors.blue,
       ),
 
       body: Column(
@@ -67,9 +75,7 @@ class _FindRideScreenState extends State<FindRideScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {});
-                    },
+                    onPressed: performSearch, // ✅ FIXED
                     child: const Text("Search"),
                   ),
                 ),
@@ -77,7 +83,6 @@ class _FindRideScreenState extends State<FindRideScreen> {
             ),
           ),
 
-          // 🔘 GIRLS ONLY FILTER
           SwitchListTile(
             title: const Text("Girls Only"),
             value: girlsOnly,
@@ -88,16 +93,14 @@ class _FindRideScreenState extends State<FindRideScreen> {
             },
           ),
 
-          // 📄 RIDES LIST
+          // 🚗 RIDES LIST
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection("rides")
-                  .where("status", isEqualTo: "active")
                   .snapshots(),
 
               builder: (context, snapshot) {
-
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
@@ -106,39 +109,28 @@ class _FindRideScreenState extends State<FindRideScreen> {
 
                 // 🔥 FILTER LOGIC
                 rides = rides.where((doc) {
-
                   var data = doc.data() as Map<String, dynamic>;
 
-                  // ❌ Hide own rides
-                  if (data["driverId"] == currentUserId) {
-                    return false;
-                  }
+                  if (data["driverId"] == currentUserId) return false;
 
-                  // ❌ Hide full rides
-                  if ((data["availableSeats"] ?? 0) <= 0) {
-                    return false;
-                  }
+                  if ((data["availableSeats"] ?? 0) <= 0) return false;
 
-                  // 🔍 From match
-                  bool fromMatch = fromController.text.isEmpty ||
+                  bool fromMatch = fromSearch.isEmpty ||
                       (data["source"] ?? "")
                           .toString()
                           .toLowerCase()
-                          .contains(fromController.text.toLowerCase());
+                          .contains(fromSearch);
 
-                  // 🔍 To match
-                  bool toMatch = toController.text.isEmpty ||
+                  bool toMatch = toSearch.isEmpty ||
                       (data["destination"] ?? "")
                           .toString()
                           .toLowerCase()
-                          .contains(toController.text.toLowerCase());
+                          .contains(toSearch);
 
-                  // 👩 Girls only filter
                   bool girlsMatch =
                       !girlsOnly || data["isGirlsOnly"] == true;
 
                   return fromMatch && toMatch && girlsMatch;
-
                 }).toList();
 
                 if (rides.isEmpty) {
@@ -148,8 +140,8 @@ class _FindRideScreenState extends State<FindRideScreen> {
                 return ListView.builder(
                   itemCount: rides.length,
                   itemBuilder: (context, index) {
-
-                    var data = rides[index].data() as Map<String, dynamic>;
+                    var data =
+                        rides[index].data() as Map<String, dynamic>;
 
                     return Card(
                       margin: const EdgeInsets.all(10),
@@ -157,7 +149,6 @@ class _FindRideScreenState extends State<FindRideScreen> {
                         title: Text(
                           "${data["source"]} → ${data["destination"]}",
                         ),
-
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -165,12 +156,10 @@ class _FindRideScreenState extends State<FindRideScreen> {
                             Text("Time: ${data["time"] ?? ""}"),
                           ],
                         ),
-
                         trailing: Text(
                           "${data["availableSeats"]} seats",
                           style: const TextStyle(color: Colors.green),
                         ),
-
                         onTap: () {
                           Navigator.push(
                             context,

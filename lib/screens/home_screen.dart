@@ -3,8 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'create_ride_screen.dart';
+import 'my_bookings_screen.dart';
+import 'find_ride_screen.dart';
 import 'profile_screen.dart';
 import 'public_transport_screen.dart';
+import 'my_rides_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
       DocumentSnapshot userDoc =
-      await FirebaseFirestore.instance.collection("users").doc(uid).get();
+          await FirebaseFirestore.instance.collection("users").doc(uid).get();
 
       setState(() {
         userName =
@@ -52,25 +55,42 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-    String currentUserId = FirebaseAuth.instance.currentUser!.uid; // ⭐ ADDED
+    String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
       backgroundColor: Colors.blue.shade50,
 
+      // ⭐ APP BAR UPDATED
       appBar: AppBar(
         backgroundColor: Colors.blue,
         title: const Text("Campus Connect"),
         actions: [
+
+          // 🚗 MY RIDES (NEW)
+          IconButton(
+            icon: const Icon(Icons.directions_car),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const MyRidesScreen(),
+                ),
+              );
+            },
+          ),
+
+          // 👤 PROFILE
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                MaterialPageRoute(
+                  builder: (_) => const ProfileScreen(),
+                ),
               );
             },
-          )
+          ),
         ],
       ),
 
@@ -83,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    
+                    // 👋 GREETING
                     Text(
                       "Hello, $userName 👋",
                       style: const TextStyle(
@@ -94,16 +114,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 25),
 
+                    // 🚗 MAIN BUTTONS
                     Row(
                       children: [
+
                         Expanded(
                           child: buildSmallButton(
                             "Find",
                             Icons.search,
                             const Color(0xFF7C4DFF),
-                            () {},
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const FindRideScreen(),
+                                ),
+                              );
+                            },
                           ),
                         ),
+
                         const SizedBox(width: 8),
 
                         Expanded(
@@ -121,6 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                           ),
                         ),
+
                         const SizedBox(width: 8),
 
                         Expanded(
@@ -128,7 +159,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             "Bookings",
                             Icons.book,
                             Colors.orange,
-                            () {},
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const MyBookingsScreen(),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -136,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 12),
 
-                    
+                    // 🚍 TRAVEL TOGETHER
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -144,19 +182,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const PublicTransportScreen(),
+                              builder: (_) =>
+                                  const PublicTransportScreen(),
                             ),
                           );
                         },
                         icon: const Icon(Icons.directions_bus),
-                        label: const Text("Travel Together",
-                        style: TextStyle(
-                                          color: Colors.white,
-                                          ),
-                                        ),
+                        label: const Text("Travel Together"),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.teal,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -166,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 20),
 
-                    
+                    // 📊 YOUR ACTIVITY
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(15),
@@ -199,11 +235,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             stream: FirebaseFirestore.instance
                                 .collection("rides")
                                 .where("driverId",
-                                    isEqualTo:
-                                        FirebaseAuth.instance.currentUser!.uid)
+                                    isEqualTo: currentUserId)
                                 .snapshots(),
                             builder: (context, snapshot) {
-                              int count = snapshot.data?.docs.length ?? 0;
+                              int count =
+                                  snapshot.data?.docs.length ?? 0;
                               return Text("🚗 Rides Created: $count");
                             },
                           ),
@@ -214,8 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             stream: FirebaseFirestore.instance
                                 .collection("rides")
                                 .where("driverId",
-                                    isEqualTo:
-                                        FirebaseAuth.instance.currentUser!.uid)
+                                    isEqualTo: currentUserId)
                                 .snapshots(),
                             builder: (context, snapshot) {
                               int activeCount = 0;
@@ -270,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-              const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
                     // 🚗 RECENT RIDES
                     const Text(
@@ -281,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-              const SizedBox(height: 10),
+                    const SizedBox(height: 10),
 
                     StreamBuilder<QuerySnapshot>(
                       stream: getRecentRides(),
@@ -319,13 +354,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                     CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "${data["source"] ?? ""} → ${data["destination"] ?? ""}",
+                                    "${data["source"]} → ${data["destination"]}",
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(height: 5),
-                                  Text("💰 ₹${data["fare"] ?? 0}"),
+                                  Text("💰 ₹${data["fare"]}"),
                                   const SizedBox(height: 5),
                                   Text(
                                     data["isGirlsOnly"] == true

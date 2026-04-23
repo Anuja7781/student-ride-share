@@ -10,13 +10,20 @@ class PublicTransportScreen extends StatefulWidget {
 }
 
 class _PublicTransportScreenState extends State<PublicTransportScreen> {
-
   final sourceController = TextEditingController();
   final destinationController = TextEditingController();
   final timeController = TextEditingController();
-  String transportType = "Bus";
 
+  String transportType = "Bus";
   bool isLoading = false;
+
+  @override
+  void dispose() {
+    sourceController.dispose();
+    destinationController.dispose();
+    timeController.dispose();
+    super.dispose();
+  }
 
   Future<void> createTrip() async {
     if (sourceController.text.isEmpty ||
@@ -30,25 +37,39 @@ class _PublicTransportScreenState extends State<PublicTransportScreen> {
 
     setState(() => isLoading = true);
 
-    String uid = FirebaseAuth.instance.currentUser!.uid;
+    try {
+      String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    DocumentSnapshot userDoc =
-        await FirebaseFirestore.instance.collection("users").doc(uid).get();
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(uid)
+          .get();
 
-    await FirebaseFirestore.instance.collection("public_trips").add({
-      "source": sourceController.text.trim(),
-      "destination": destinationController.text.trim(),
-      "time": timeController.text.trim(),
-      "transportType": transportType,
-      "userId": uid,
-      "userName": userDoc["name"],
-      "participants": [],
-      "createdAt": DateTime.now(),
-    });
+      await FirebaseFirestore.instance.collection("public_trips").add({
+        "source": sourceController.text.trim(),
+        "destination": destinationController.text.trim(),
+        "time": timeController.text.trim(),
+        "transportType": transportType,
+        "userId": uid,
+        "userName": userDoc["name"] ?? "User",
+        "participants": [],
+        "createdAt": FieldValue.serverTimestamp(), // ✅ FIXED
+      });
 
-    sourceController.clear();
-    destinationController.clear();
-    timeController.clear();
+      sourceController.clear();
+      destinationController.clear();
+      timeController.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Trip Created 🚍")),
+      );
+    } catch (e) {
+  debugPrint("CREATE TRIP ERROR: $e");
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text("Error: $e")),
+  );
+}
 
     setState(() => isLoading = false);
   }
@@ -80,17 +101,14 @@ class _PublicTransportScreenState extends State<PublicTransportScreen> {
           child: Column(
             children: [
 
-              // 📦 CREATE TRIP SECTION
+              // 📦 CREATE TRIP CARD
               Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 5,
-                    )
+                    BoxShadow(color: Colors.black12, blurRadius: 5)
                   ],
                 ),
                 child: Column(
@@ -108,12 +126,13 @@ class _PublicTransportScreenState extends State<PublicTransportScreen> {
 
                     buildField(sourceController, "From"),
                     buildField(destinationController, "To"),
-                    buildField(timeController, "Time (e.g. 5:30 PM)"),
+                    buildField(timeController, "Time"),
 
                     const SizedBox(height: 10),
 
                     DropdownButton<String>(
                       value: transportType,
+                      isExpanded: true,
                       items: const [
                         DropdownMenuItem(value: "Bus", child: Text("Bus")),
                         DropdownMenuItem(value: "Auto", child: Text("Auto")),
@@ -128,16 +147,19 @@ class _PublicTransportScreenState extends State<PublicTransportScreen> {
 
                     const SizedBox(height: 10),
 
-                    ElevatedButton(
-                      onPressed: isLoading ? null : createTrip,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : createTrip,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                        ),
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const Text("Create Trip"),
                       ),
-                      child: isLoading
-                          ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
-                          : const Text("Create Trip"),
                     ),
                   ],
                 ),
@@ -155,30 +177,27 @@ class _PublicTransportScreenState extends State<PublicTransportScreen> {
 
               const SizedBox(height: 10),
 
-              // 🚗 TRIP LIST
+              // 🚍 TRIPS LIST
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection("public_trips")
-                    .orderBy("createdAt", descending: true)
-                    .snapshots(),
+                    .snapshots(), // ✅ FIXED (removed orderBy)
+
                 builder: (context, snapshot) {
 
-                  if (!snapshot.hasData) {
-                    return const CircularProgressIndicator();
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Text("No trips available");
                   }
 
                   var trips = snapshot.data!.docs;
 
-                  if (trips.isEmpty) {
-                    return const Text("No trips available");
-                  }
-
                   return Column(
                     children: trips.map((doc) {
-
-                      final data =
-                          doc.data() as Map<String, dynamic>;
-
+                      final data = doc.data() as Map<String, dynamic>;
                       List participants = data["participants"] ?? [];
 
                       return Container(
@@ -189,12 +208,11 @@ class _PublicTransportScreenState extends State<PublicTransportScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
 
                             Text(
-                              "${data["source"]} → ${data["destination"]}",
+                              "${data["source"] ?? ""} → ${data["destination"] ?? ""}",
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -202,18 +220,20 @@ class _PublicTransportScreenState extends State<PublicTransportScreen> {
 
                             const SizedBox(height: 5),
 
-                            Text("🚌 ${data["transportType"]}"),
-                            Text("⏰ ${data["time"]}"),
-                            Text("👤 ${data["userName"]}"),
+                            Text("🚌 ${data["transportType"] ?? ""}"),
+                            Text("⏰ ${data["time"] ?? ""}"),
+                            Text("👤 ${data["userName"] ?? ""}"),
                             Text("👥 Joined: ${participants.length}"),
 
                             const SizedBox(height: 10),
 
-                            ElevatedButton(
-                              onPressed: () {
-                                joinTrip(doc.id, participants);
-                              },
-                              child: const Text("Join Trip"),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () =>
+                                    joinTrip(doc.id, participants),
+                                child: const Text("Join Trip"),
+                              ),
                             ),
                           ],
                         ),

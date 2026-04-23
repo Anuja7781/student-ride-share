@@ -19,7 +19,6 @@ class RideDetailsScreen extends StatefulWidget {
 }
 
 class _RideDetailsScreenState extends State<RideDetailsScreen> {
-
   bool isBooked = false;
   bool isLoading = true;
 
@@ -29,23 +28,45 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
     checkBooking();
   }
 
-  // ⭐ CHECK IF USER ALREADY BOOKED
+  // ✅ SAFE BOOKING CHECK (FIXED BUFFER ISSUE)
   Future<void> checkBooking() async {
-    String uid = FirebaseAuth.instance.currentUser!.uid;
+    try {
+      final user = FirebaseAuth.instance.currentUser;
 
-    var query = await FirebaseFirestore.instance
-        .collection("bookings")
-        .where("rideId", isEqualTo: widget.rideId)
-        .where("userId", isEqualTo: uid)
-        .get();
+      if (user == null) {
+        setState(() => isLoading = false);
+        return;
+      }
 
-    setState(() {
-      isBooked = query.docs.isNotEmpty;
-      isLoading = false;
-    });
+      var query = await FirebaseFirestore.instance
+          .collection("bookings")
+          .where("rideId", isEqualTo: widget.rideId)
+          .where("userId", isEqualTo: user.uid)
+          .get();
+
+      if (!mounted) return;
+
+      setState(() {
+        isBooked = query.docs.isNotEmpty;
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("checkBooking error: $e");
+
+      if (!mounted) return;
+
+      setState(() {
+        isBooked = false;
+        isLoading = false; // 🔥 IMPORTANT FIX (prevents buffering)
+      });
+    }
   }
 
-  Future<void> bookRide(BuildContext context) async {
+  Future<void> bookRide() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
     int seats = widget.rideData["availableSeats"] ?? 0;
 
     if (seats <= 0) {
@@ -62,12 +83,10 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
       return;
     }
 
-    String uid = FirebaseAuth.instance.currentUser!.uid;
-
     int otp = 1000 + Random().nextInt(9000);
 
     try {
-      // update seats
+      // 🔥 update seats safely
       await FirebaseFirestore.instance
           .collection("rides")
           .doc(widget.rideId)
@@ -75,23 +94,25 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
         "availableSeats": seats - 1,
       });
 
-      // create booking
+      // 🔥 create booking
       await FirebaseFirestore.instance.collection("bookings").add({
         "rideId": widget.rideId,
-        "userId": uid,
-        "userName": FirebaseAuth.instance.currentUser?.email ?? "Student",
+        "userId": user.uid,
+        "userName": user.email ?? "Student",
         "otp": otp,
         "status": "active",
         "createdAt": FieldValue.serverTimestamp(),
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Ride Booked 🚗")),
-      );
+      if (!mounted) return;
 
       setState(() {
         isBooked = true;
       });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Ride Booked 🚗")),
+      );
 
       Navigator.pushReplacement(
         context,
@@ -102,8 +123,9 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
           ),
         ),
       );
-
     } catch (e) {
+      debugPrint("booking error: $e");
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Booking failed")),
       );
@@ -112,11 +134,12 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final data = widget.rideData;
 
-    String driverName = widget.rideData["driverName"] ?? "Student";
-    String phone = widget.rideData["phone"] ?? "Not available";
-    String vehicle = widget.rideData["vehicleNumber"] ?? "Not available";
-    int seats = widget.rideData["availableSeats"] ?? 0;
+    String driverName = data["driverName"] ?? "Student";
+    String phone = data["phone"] ?? "Not available";
+    String vehicle = data["vehicleNumber"] ?? "Not available";
+    int seats = data["availableSeats"] ?? 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -127,76 +150,74 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
 
-            // 📍 ROUTE
-            Text(
-              "${widget.rideData["source"]} → ${widget.rideData["destination"]}",
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+                  Text(
+                    "${data["source"]} → ${data["destination"]}",
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Text("💰 Fare: ₹${data["fare"]}"),
+                  Text("🪑 Seats Left: $seats"),
+                  Text("🕒 Time: ${data["time"] ?? ""}"),
+
+                  const SizedBox(height: 15),
+
+                  Text("👤 Driver: $driverName"),
+                  Text("📞 Phone: $phone"),
+                  Text("🚗 Vehicle: $vehicle"),
+
+                  const SizedBox(height: 20),
+
+                  ElevatedButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Calling $phone")),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                    ),
+                    child: const Text("Call Driver"),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: (isBooked || seats <= 0)
+                          ? null
+                          : bookRide,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isBooked
+                            ? Colors.grey
+                            : seats <= 0
+                                ? Colors.red
+                                : Colors.green,
+                      ),
+                      child: Text(
+                        isBooked
+                            ? "Already Booked"
+                            : seats <= 0
+                                ? "Ride Full"
+                                : "Book Ride",
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 10),
-
-            Text("💰 Fare: ₹${widget.rideData["fare"]}"),
-            Text("🪑 Seats Left: $seats"),
-            Text("🕒 Time: ${widget.rideData["time"] ?? ""}"),
-
-            const SizedBox(height: 15),
-
-            Text("👤 Driver: $driverName"),
-            Text("📞 Phone: $phone"),
-            Text("🚗 Vehicle: $vehicle"),
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Calling $phone")),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-              ),
-              child: const Text("Call Driver"),
-            ),
-
-            const SizedBox(height: 30),
-
-            // 🚗 BOOK BUTTON (SMART)
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: (isBooked || seats <= 0)
-                    ? null
-                    : () => bookRide(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isBooked
-                      ? Colors.grey
-                      : seats <= 0
-                      ? Colors.red
-                      : Colors.green,
-                ),
-                child: Text(
-                  isBooked
-                      ? "Already Booked"
-                      : seats <= 0
-                      ? "Ride Full"
-                      : "Book Ride",
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
