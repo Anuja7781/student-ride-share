@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'login_screen.dart'; // ⭐ IMPORTANT
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -25,7 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
       DocumentSnapshot doc =
-          await FirebaseFirestore.instance.collection("users").doc(uid).get();
+      await FirebaseFirestore.instance.collection("users").doc(uid).get();
 
       setState(() {
         userData = doc.data() as Map<String, dynamic>;
@@ -50,54 +51,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : userData == null
-              ? const Center(child: Text("No user data found"))
-              : Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
+          ? const Center(child: Text("No user data found"))
+          : Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
 
-                      const CircleAvatar(
-                        radius: 40,
-                        backgroundColor: Color(0xFF7C4DFF),
-                        child: Icon(Icons.person, size: 40, color: Colors.white),
-                      ),
+            const CircleAvatar(
+              radius: 40,
+              backgroundColor: Color(0xFF7C4DFF),
+              child: Icon(Icons.person, size: 40, color: Colors.white),
+            ),
 
-                      const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-                      Text(
-                        userData!["name"] ?? "No Name",
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+            Text(
+              userData!["name"] ?? "No Name",
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
 
-                      const SizedBox(height: 30),
+            const SizedBox(height: 30),
 
-                      buildInfo("Email", userData!["email"]),
-                      buildInfo("Phone", userData!["phone"]),
-                      buildInfo("Department", userData!["department"]),
-                      buildInfo("Year", userData!["year"]),
-                      buildInfo("Gender", userData!["gender"]),
+            buildInfo("Email", userData!["email"]),
+            buildInfo("Phone", userData!["phone"]),
+            buildInfo("Department", userData!["department"]),
+            buildInfo("Year", userData!["year"]),
+            buildInfo("Gender", userData!["gender"]),
 
-                      const Spacer(),
+            const Spacer(),
 
-                      ElevatedButton(
-                        onPressed: () async {
-                          await FirebaseAuth.instance.signOut();
+            // 🔴 LOGOUT BUTTON (FIXED)
+            ElevatedButton(
+              onPressed: () async {
 
-                          Navigator.popUntil(
-                              context, (route) => route.isFirst);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          minimumSize: const Size(double.infinity, 50),
-                        ),
-                        child: const Text("Logout"),
-                      ),
-                    ],
-                  ),
-                ),
+                await FirebaseAuth.instance.signOut();
+
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const LoginScreen()),
+                      (route) => false,
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                minimumSize: const Size(double.infinity, 50),
+              ),
+              child: const Text("Logout"),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

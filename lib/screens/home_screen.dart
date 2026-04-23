@@ -4,6 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'create_ride_screen.dart';
 import 'profile_screen.dart';
+import 'find_ride_screen.dart';
+import 'my_bookings_screen.dart';
+import 'my_rides_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
       DocumentSnapshot userDoc =
-          await FirebaseFirestore.instance.collection("users").doc(uid).get();
+      await FirebaseFirestore.instance.collection("users").doc(uid).get();
 
       setState(() {
         userName = userDoc["name"] ?? "User";
@@ -44,6 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    String currentUserId = FirebaseAuth.instance.currentUser!.uid; // ⭐ ADDED
+
     return Scaffold(
       backgroundColor: Colors.blue.shade50,
 
@@ -65,231 +71,216 @@ class _HomeScreenState extends State<HomeScreen> {
 
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-
           : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-                  
-                    Text(
-                      "Hello, $userName 👋",
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+              Text(
+                "Hello, $userName 👋",
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
 
-                    const SizedBox(height: 25),
+              const SizedBox(height: 25),
 
-                    
-                    Row(
-                      children: [
+              // 🔘 BUTTONS
+              Row(
+                children: [
 
-                        Expanded(
-                          child: buildSmallButton(
-                            "Find",
-                            Icons.search,
-                            const Color(0xFF7C4DFF),
-                            () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Find Ride handled by Person A"),
-                                ),
-                              );
-                            },
+                  Expanded(
+                    child: buildSmallButton(
+                      "Find",
+                      Icons.search,
+                      const Color(0xFF7C4DFF),
+                          () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const FindRideScreen(),
                           ),
-                        ),
-
-                        const SizedBox(width: 8),
-
-                        Expanded(
-                          child: buildSmallButton(
-                            "Create",
-                            Icons.add,
-                            Colors.green,
-                            () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const CreateRideScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-
-                        const SizedBox(width: 8),
-
-                        Expanded(
-                          child: buildSmallButton(
-                            "Bookings",
-                            Icons.book,
-                            Colors.orange,
-                            () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Bookings screen coming soon"),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 6,
-                            offset: Offset(0, 3),
-                          )
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-
-                          Text(
-                            "Dashboard Overview",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          SizedBox(height: 10),
-
-                          Text("📊 Your Activity (Static for now)"),
-                          SizedBox(height: 5),
-                          Text("🚗 Rides Created: 0"),
-                          Text("📍 Active Rides: 0"),
-                          Text("📅 Bookings: 0"),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                   
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-
-                          Text(
-                            "🛡️ Safety Features",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          SizedBox(height: 8),
-
-                          Text("✔ Verified Student Platform"),
-                          Text("✔ Girls-only Ride Support"),
-                          Text("✔ SOS Emergency Button"),
-                          Text("✔ Live Tracking (Upcoming)"),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    
-                    const Text(
-                      "🚗 Recent Rides",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection("rides")
-                          .orderBy("createdAt", descending: true)
-                          .limit(5)
-                          .snapshots(),
-
-                      builder: (context, snapshot) {
-
-                        if (!snapshot.hasData) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-
-                        var rides = snapshot.data!.docs;
-
-                        if (rides.isEmpty) {
-                          return const Text("No rides available");
-                        }
-
-                        return Column(
-                          children: rides.map((doc) {
-
-                            final data = doc.data() as Map<String, dynamic>;
-
-                            return Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.only(bottom: 10),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-
-                                  Text(
-                                    "${data["source"] ?? ""} → ${data["destination"] ?? ""}",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 5),
-
-                                  Text("💰 ₹${data["fare"] ?? 0}"),
-
-                                  const SizedBox(height: 5),
-
-                                  Text(
-                                    data["isGirlsOnly"] == true
-                                        ? "🏷️ Girls Only"
-                                        : "🏷️ All Students",
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
                         );
                       },
                     ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  Expanded(
+                    child: buildSmallButton(
+                      "Create",
+                      Icons.add,
+                      Colors.green,
+                          () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CreateRideScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  Expanded(
+                    child: buildSmallButton(
+                      "Bookings",
+                      Icons.book,
+                      Colors.orange,
+                          () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MyBookingsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  Expanded(
+                    child: buildSmallButton(
+                      "My Rides",
+                      Icons.directions_car,
+                      Colors.blue,
+                          () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MyRidesScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 25),
+
+              // 📊 DASHBOARD
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Dashboard Overview",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    SizedBox(height: 10),
+                    Text("📊 Your Activity"),
+                    Text("🚗 Rides Created: Coming soon"),
+                    Text("📅 Bookings: Coming soon"),
                   ],
                 ),
               ),
-            ),
+
+              const SizedBox(height: 20),
+
+              // 🚗 RECENT RIDES
+              const Text(
+                "🚗 Recent Rides",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection("rides")
+                    .orderBy("createdAt", descending: true)
+                    .limit(5)
+                    .snapshots(),
+                builder: (context, snapshot) {
+
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  var rides = snapshot.data!.docs;
+
+                  // 🔥 APPLY FILTER HERE
+                  rides = rides.where((doc) {
+
+                    var data = doc.data() as Map<String, dynamic>;
+
+                    // ❌ hide own rides
+                    if (data["driverId"] == currentUserId) {
+                      return false;
+                    }
+
+                    // ❌ hide full rides
+                    if ((data["availableSeats"] ?? 0) <= 0) {
+                      return false;
+                    }
+
+                    return true;
+
+                  }).toList();
+
+                  if (rides.isEmpty) {
+                    return const Text("No rides available");
+                  }
+
+                  return Column(
+                    children: rides.map((doc) {
+
+                      final data = doc.data() as Map<String, dynamic>;
+
+                      return Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+
+                            Text(
+                              "${data["source"]} → ${data["destination"]}",
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+
+                            const SizedBox(height: 5),
+
+                            Text("💰 ₹${data["fare"]}"),
+
+                            const SizedBox(height: 5),
+
+                            Text(
+                              data["isGirlsOnly"] == true
+                                  ? "🏷️ Girls Only"
+                                  : "🏷️ All Students",
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -304,9 +295,6 @@ class _HomeScreenState extends State<HomeScreen> {
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         padding: const EdgeInsets.symmetric(vertical: 18),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
       ),
       child: Column(
         children: [

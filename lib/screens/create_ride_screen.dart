@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
 
 class CreateRideScreen extends StatefulWidget {
   const CreateRideScreen({super.key});
@@ -16,18 +18,43 @@ class _CreateRideScreenState extends State<CreateRideScreen> {
   final timeController = TextEditingController();
   final seatsController = TextEditingController();
   final fareController = TextEditingController();
+  final phoneController = TextEditingController();
+  final vehicleController = TextEditingController();
 
   bool isLoading = false;
-  bool isGirlsOnly = false; // 
+  bool isGirlsOnly = false;
+
+  // ⭐ convert place → coordinates
+  Future<Map<String, double>> getCoordinates(String place) async {
+    final url = Uri.parse(
+        "https://nominatim.openstreetmap.org/search?q=$place&format=json");
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      if (data.isNotEmpty) {
+        return {
+          "lat": double.parse(data[0]["lat"]),
+          "lng": double.parse(data[0]["lon"]),
+        };
+      }
+    }
+
+    throw Exception("Location not found");
+  }
 
   Future<void> createRide() async {
 
     if (
-      sourceController.text.isEmpty ||
-      destinationController.text.isEmpty ||
-      timeController.text.isEmpty ||
-      seatsController.text.isEmpty ||
-      fareController.text.isEmpty
+    sourceController.text.isEmpty ||
+        destinationController.text.isEmpty ||
+        timeController.text.isEmpty ||
+        seatsController.text.isEmpty ||
+        fareController.text.isEmpty ||
+        phoneController.text.isEmpty ||
+        vehicleController.text.isEmpty
     ) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all fields")),
@@ -42,23 +69,39 @@ class _CreateRideScreenState extends State<CreateRideScreen> {
     try {
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
+      // ⭐ get real coordinates
+      final sourceCoords =
+      await getCoordinates(sourceController.text.trim());
+
+      final destCoords =
+      await getCoordinates(destinationController.text.trim());
+
       await FirebaseFirestore.instance.collection("rides").add({
         "source": sourceController.text.trim(),
         "destination": destinationController.text.trim(),
         "time": timeController.text.trim(),
 
-        "seats": int.tryParse(seatsController.text.trim()) ?? 0,
-        "availableSeats": int.tryParse(seatsController.text.trim()) ?? 0,
+        "seats": int.parse(seatsController.text),
+        "availableSeats": int.parse(seatsController.text),
 
-        "fare": int.tryParse(fareController.text.trim()) ?? 0,
+        "fare": int.parse(fareController.text),
 
         "driverId": uid,
+        "driverName":
+        FirebaseAuth.instance.currentUser?.email ?? "Student",
 
-        
-        "driverName": FirebaseAuth.instance.currentUser?.email ?? "Student",
+        "phone": phoneController.text.trim(),
+        "vehicleNumber": vehicleController.text.trim(),
+
         "isGirlsOnly": isGirlsOnly,
+        "status": "active",
 
-        
+        // ⭐ REAL LOCATIONS
+        "lat": sourceCoords["lat"],
+        "lng": sourceCoords["lng"],
+        "destLat": destCoords["lat"],
+        "destLng": destCoords["lng"],
+
         "createdAt": FieldValue.serverTimestamp(),
       });
 
@@ -72,7 +115,7 @@ class _CreateRideScreenState extends State<CreateRideScreen> {
 
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to create ride")),
+        const SnackBar(content: Text("Location not found")),
       );
     }
 
@@ -88,6 +131,8 @@ class _CreateRideScreenState extends State<CreateRideScreen> {
     timeController.dispose();
     seatsController.dispose();
     fareController.dispose();
+    phoneController.dispose();
+    vehicleController.dispose();
     super.dispose();
   }
 
@@ -99,6 +144,7 @@ class _CreateRideScreenState extends State<CreateRideScreen> {
         backgroundColor: Colors.blue,
       ),
       backgroundColor: Colors.blue.shade50,
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -106,13 +152,12 @@ class _CreateRideScreenState extends State<CreateRideScreen> {
 
             buildField(sourceController, "From"),
             buildField(destinationController, "To"),
-            buildField(timeController, "Time (e.g. 5:30 PM)"),
-            buildField(seatsController, "Total Seats", isNumber: true),
-            buildField(fareController, "Fare per seat", isNumber: true),
+            buildField(timeController, "Time"),
+            buildField(seatsController, "Seats", isNumber: true),
+            buildField(fareController, "Fare", isNumber: true),
+            buildField(phoneController, "Phone", isNumber: true),
+            buildField(vehicleController, "Vehicle Number"),
 
-            const SizedBox(height: 10),
-
-            
             SwitchListTile(
               title: const Text("Girls Only Ride"),
               value: isGirlsOnly,
@@ -125,21 +170,15 @@ class _CreateRideScreenState extends State<CreateRideScreen> {
 
             const SizedBox(height: 20),
 
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: isLoading ? null : createRide,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                ),
-                child: isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        "Create Ride",
-                        style: TextStyle(color: Colors.white),
-                      ),
+            ElevatedButton(
+              onPressed: isLoading ? null : createRide,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple,
+                minimumSize: const Size(double.infinity, 50),
               ),
+              child: isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("Create Ride"),
             ),
           ],
         ),
@@ -154,7 +193,7 @@ class _CreateRideScreenState extends State<CreateRideScreen> {
       child: TextField(
         controller: controller,
         keyboardType:
-            isNumber ? TextInputType.number : TextInputType.text,
+        isNumber ? TextInputType.number : TextInputType.text,
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(
