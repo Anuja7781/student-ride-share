@@ -53,7 +53,7 @@ class _PublicTransportScreenState extends State<PublicTransportScreen> {
         "userId": uid,
         "userName": userDoc["name"] ?? "User",
         "participants": [],
-        "createdAt": FieldValue.serverTimestamp(), // ✅ FIXED
+        "createdAt": FieldValue.serverTimestamp(), 
       });
 
       sourceController.clear();
@@ -101,7 +101,7 @@ class _PublicTransportScreenState extends State<PublicTransportScreen> {
           child: Column(
             children: [
 
-              // 📦 CREATE TRIP CARD
+             
               Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
@@ -177,7 +177,7 @@ class _PublicTransportScreenState extends State<PublicTransportScreen> {
 
               const SizedBox(height: 10),
 
-              // 🚍 TRIPS LIST
+             
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection("public_trips")

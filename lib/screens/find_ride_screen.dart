@@ -46,7 +46,7 @@ class _FindRideScreenState extends State<FindRideScreen> {
       body: Column(
         children: [
 
-          // 🔍 SEARCH BOX
+       
           Padding(
             padding: const EdgeInsets.all(10),
             child: Column(
@@ -75,7 +75,7 @@ class _FindRideScreenState extends State<FindRideScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: performSearch, // ✅ FIXED
+                    onPressed: performSearch, 
                     child: const Text("Search"),
                   ),
                 ),
@@ -93,7 +93,7 @@ class _FindRideScreenState extends State<FindRideScreen> {
             },
           ),
 
-          // 🚗 RIDES LIST
+          
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -107,7 +107,7 @@ class _FindRideScreenState extends State<FindRideScreen> {
 
                 var rides = snapshot.data!.docs;
 
-                // 🔥 FILTER LOGIC
+                
                 rides = rides.where((doc) {
                   var data = doc.data() as Map<String, dynamic>;
 

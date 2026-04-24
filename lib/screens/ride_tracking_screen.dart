@@ -121,7 +121,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
     }
   }
 
-  // 🚨 SOS ACTION
+  
   Future<void> sendSOS() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
@@ -152,7 +152,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // 🗺️ MAP
+          
           FlutterMap(
             mapController: mapController,
             options: MapOptions(
@@ -196,7 +196,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
             ],
           ),
 
-          // 🔙 BACK BUTTON
+          
           Positioned(
             top: 40,
             left: 15,
@@ -209,7 +209,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
             ),
           ),
 
-          // 📍 BOTTOM INFO PANEL
+        
           Positioned(
             bottom: 0,
             left: 0,
@@ -254,7 +254,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
             ),
           ),
 
-          // 🚨 FLOATING SAFETY BUTTON
+          
           Positioned(
             right: 20,
             bottom: 140,

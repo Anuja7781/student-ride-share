@@ -60,13 +60,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.blue.shade50,
 
-      // ⭐ APP BAR UPDATED
+     
       appBar: AppBar(
         backgroundColor: Colors.blue,
         title: const Text("Campus Connect"),
         actions: [
 
-          // 🚗 MY RIDES (NEW)
           IconButton(
             icon: const Icon(Icons.directions_car),
             onPressed: () {
@@ -79,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
 
-          // 👤 PROFILE
+          
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
@@ -102,8 +101,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
-                    // 👋 GREETING
                     Text(
                       "Hello, $userName 👋",
                       style: const TextStyle(
@@ -114,67 +111,70 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 25),
 
-                    // 🚗 MAIN BUTTONS
+                    
                     Row(
                       children: [
 
                         Expanded(
-                          child: buildSmallButton(
-                            "Find",
-                            Icons.search,
-                            const Color(0xFF7C4DFF),
-                            () {
+                          child: ElevatedButton.icon(
+                            icon: Icon(Icons.search),
+                            label: Text("Find"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurpleAccent.shade200,
+                            ),
+                            onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => const FindRideScreen(),
+                                  builder: (context) => FindRideScreen(),
                                 ),
                               );
                             },
                           ),
                         ),
+                        const SizedBox(width: 8),
+
+                        Expanded(
+                            child: ElevatedButton.icon(
+                              icon: Icon(Icons.add),
+                              label: Text("Create"),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CreateRideScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
 
                         const SizedBox(width: 8),
 
                         Expanded(
-                          child: buildSmallButton(
-                            "Create",
-                            Icons.add,
-                            Colors.green,
-                            () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const CreateRideScreen(),
-                                ),
-                              );
-                            },
+                            child: ElevatedButton.icon(
+                              icon: Icon(Icons.book),
+                              label: Text("Bookings"),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MyBookingsScreen(),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
-                        ),
-
-                        const SizedBox(width: 8),
-
-                        Expanded(
-                          child: buildSmallButton(
-                            "Bookings",
-                            Icons.book,
-                            Colors.orange,
-                            () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const MyBookingsScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
 
                     const SizedBox(height: 12),
 
-                    // 🚍 TRAVEL TOGETHER
+                    
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -202,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 20),
 
-                    // 📊 YOUR ACTIVITY
+                    
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(15),
@@ -278,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 20),
 
-                    // 🛡️ SAFETY
+                    
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(15),
@@ -307,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 20),
 
-                    // 🚗 RECENT RIDES
+                    
                     const Text(
                       "🚗 Recent Rides",
                       style: TextStyle(
@@ -381,25 +381,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildSmallButton(
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return ElevatedButton(
-      onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        padding: const EdgeInsets.symmetric(vertical: 18),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: Colors.white),
-          const SizedBox(height: 5),
-          Text(title, style: const TextStyle(color: Colors.white)),
-        ],
-      ),
-    );
-  }
-}
+  

@@ -68,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FA),
+      backgroundColor: Colors.blue.shade50,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
 
               const Icon(Icons.directions_car,
-                  size: 80, color: Color(0xFF243B6B)),
+                  size: 80, color:Colors.blue ),
 
               const SizedBox(height: 20),
 
@@ -86,13 +86,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF243B6B),
+                  color: Colors.indigo,
                 ),
               ),
 
               const SizedBox(height: 30),
 
-              // EMAIL
+              
               TextField(
                 controller: emailController,
                 decoration: InputDecoration(
@@ -105,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 15),
 
-              // PASSWORD
+             
               TextField(
                 controller: passwordController,
                 obscureText: true,
@@ -119,14 +119,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 25),
 
-              // LOGIN BUTTON
+              
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: isLoading ? null : loginUser,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF7C4DFF),
+                    backgroundColor: Colors.purple,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -151,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
                 child: const Text(
                   "Don't have an account? Sign Up",
-                  style: TextStyle(color: Color(0xFF243B6B)),
+                  style: TextStyle(color: Colors.blue),
                 ),
               ),
             ],

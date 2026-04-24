@@ -49,7 +49,7 @@ class MyRidesScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
 
-                      // 🚗 ROUTE
+                      
                       Text(
                         "${rideData["source"]} → ${rideData["destination"]}",
                         style: const TextStyle(
@@ -65,7 +65,7 @@ class MyRidesScreen extends StatelessWidget {
 
                       const SizedBox(height: 10),
 
-                      // 👥 BOOKINGS
+                   
                       StreamBuilder<QuerySnapshot>(
                         stream: FirebaseFirestore.instance
                             .collection("bookings")
@@ -100,12 +100,12 @@ class MyRidesScreen extends StatelessWidget {
 
                       const SizedBox(height: 12),
 
-                      // 🔘 ACTION BUTTONS (only if active)
+                      
                       if (status == "active")
                         Row(
                           children: [
 
-                            // ✅ COMPLETE RIDE
+                           
                             ElevatedButton(
                               onPressed: () async {
                                 await FirebaseFirestore.instance
@@ -128,7 +128,7 @@ class MyRidesScreen extends StatelessWidget {
 
                             const SizedBox(width: 10),
 
-                            // ❌ CANCEL RIDE
+                            
                             ElevatedButton(
                               onPressed: () async {
 
@@ -140,7 +140,7 @@ class MyRidesScreen extends StatelessWidget {
                                   "status": "cancelled",
                                 });
 
-                                // update all bookings
+                               
                                 var bookings = await FirebaseFirestore.instance
                                     .collection("bookings")
                                     .where("rideId", isEqualTo: ride.id)

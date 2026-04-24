@@ -42,7 +42,7 @@ class _SignupScreenState extends State<SignupScreen> {
     });
 
     try {
-      // 1. Firebase Auth
+      
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
@@ -51,7 +51,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
       String uid = userCredential.user!.uid;
 
-      // 2. Firestore user data
+      
       await FirebaseFirestore.instance.collection("users").doc(uid).set({
         "uid": uid,
         "name": nameController.text.trim(),
@@ -65,7 +65,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
       if (!mounted) return;
 
-      // 3. Navigate to Home
+      
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -137,7 +137,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
             const SizedBox(height: 12),
 
-            // 👇 GENDER DROPDOWN
+            
             DropdownButtonFormField<String>(
               value: selectedGender,
               decoration: InputDecoration(

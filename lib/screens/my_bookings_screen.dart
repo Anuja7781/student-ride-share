@@ -80,7 +80,7 @@ class MyBookingsScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
 
-                          // 🚗 ROUTE
+                          
                           Text(
                             "$source → $destination",
                             style: const TextStyle(
@@ -91,12 +91,12 @@ class MyBookingsScreen extends StatelessWidget {
 
                           const SizedBox(height: 5),
 
-                          // 💰 + OTP
+                          
                           Text("₹$fare • OTP: ${otp ?? "----"}"),
 
                           const SizedBox(height: 5),
 
-                          // 📊 STATUS
+                          
                           Text(
                             "Status: $status",
                             style: TextStyle(
@@ -111,12 +111,12 @@ class MyBookingsScreen extends StatelessWidget {
 
                           const SizedBox(height: 10),
 
-                          // 🔘 ACTION BUTTONS
+                          
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
 
-                              // 📍 TRACK BUTTON
+                              
                               ElevatedButton(
                                 onPressed: () {
                                   Navigator.push(
@@ -132,7 +132,7 @@ class MyBookingsScreen extends StatelessWidget {
                                 child: const Text("Track"),
                               ),
 
-                              // ❌ CANCEL BUTTON (only if active)
+                             
                               ElevatedButton(
                                 onPressed: status == "active"
                                     ? () async {

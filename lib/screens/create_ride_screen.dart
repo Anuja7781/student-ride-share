@@ -24,7 +24,7 @@ class _CreateRideScreenState extends State<CreateRideScreen> {
   bool isLoading = false;
   bool isGirlsOnly = false;
 
-  // ⭐ convert place → coordinates
+ 
   Future<Map<String, double>> getCoordinates(String place) async {
     final url = Uri.parse(
         "https://nominatim.openstreetmap.org/search?q=$place&format=json");
@@ -69,7 +69,7 @@ class _CreateRideScreenState extends State<CreateRideScreen> {
     try {
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
-      // ⭐ get real coordinates
+      
       final sourceCoords =
       await getCoordinates(sourceController.text.trim());
 
@@ -96,7 +96,7 @@ class _CreateRideScreenState extends State<CreateRideScreen> {
         "isGirlsOnly": isGirlsOnly,
         "status": "active",
 
-        // ⭐ REAL LOCATIONS
+        
         "lat": sourceCoords["lat"],
         "lng": sourceCoords["lng"],
         "destLat": destCoords["lat"],

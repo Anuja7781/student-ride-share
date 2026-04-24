@@ -28,7 +28,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
     checkBooking();
   }
 
-  // ✅ SAFE BOOKING CHECK (FIXED BUFFER ISSUE)
+  
   Future<void> checkBooking() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -57,7 +57,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
 
       setState(() {
         isBooked = false;
-        isLoading = false; // 🔥 IMPORTANT FIX (prevents buffering)
+        isLoading = false; /
       });
     }
   }
@@ -86,7 +86,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
     int otp = 1000 + Random().nextInt(9000);
 
     try {
-      // 🔥 update seats safely
+      
       await FirebaseFirestore.instance
           .collection("rides")
           .doc(widget.rideId)
@@ -94,7 +94,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
         "availableSeats": seats - 1,
       });
 
-      // 🔥 create booking
+      
       await FirebaseFirestore.instance.collection("bookings").add({
         "rideId": widget.rideId,
         "userId": user.uid,
