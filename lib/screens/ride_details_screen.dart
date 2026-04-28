@@ -57,7 +57,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
 
       setState(() {
         isBooked = false;
-        isLoading = false; /
+        isLoading = false; 
       });
     }
   }

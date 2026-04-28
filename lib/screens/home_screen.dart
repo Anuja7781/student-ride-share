@@ -59,13 +59,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: Colors.blue.shade50,
-
-     
       appBar: AppBar(
         backgroundColor: Colors.blue,
         title: const Text("Campus Connect"),
         actions: [
-
           IconButton(
             icon: const Icon(Icons.directions_car),
             onPressed: () {
@@ -77,8 +74,6 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
-
-          
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
@@ -92,7 +87,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -108,73 +102,66 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 25),
-
-                    
                     Row(
                       children: [
-
                         Expanded(
                           child: ElevatedButton.icon(
-                            icon: Icon(Icons.search),
-                            label: Text("Find"),
+                            icon: const Icon(Icons.search),
+                            label: const Text("Find"),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.deepPurpleAccent.shade200,
+                              backgroundColor:
+                                  Colors.deepPurpleAccent.shade200,
                             ),
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => FindRideScreen(),
+                                  builder: (context) => const FindRideScreen(),
                                 ),
                               );
                             },
                           ),
                         ),
                         const SizedBox(width: 8),
-
                         Expanded(
-                            child: ElevatedButton.icon(
-                              icon: Icon(Icons.add),
-                              label: Text("Create"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => CreateRideScreen(),
-                                  ),
-                                );
-                              },
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.add),
+                            label: const Text("Create"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
                             ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const CreateRideScreen(),
+                                ),
+                              );
+                            },
                           ),
-
+                        ),
                         const SizedBox(width: 8),
-
                         Expanded(
-                            child: ElevatedButton.icon(
-                              icon: Icon(Icons.book),
-                              label: Text("Bookings"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MyBookingsScreen(),
-                                  ),
-                                );
-                              },
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.book),
+                            label: const Text("Bookings"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
                             ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const MyBookingsScreen(),
+                                ),
+                              );
+                            },
                           ),
-
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 12),
-
-                    
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -199,10 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
-                    
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(15),
@@ -220,7 +204,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-
                           const Text(
                             "📊 Your Activity",
                             style: TextStyle(
@@ -228,9 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               fontSize: 16,
                             ),
                           ),
-
                           const SizedBox(height: 10),
-
                           StreamBuilder<QuerySnapshot>(
                             stream: FirebaseFirestore.instance
                                 .collection("rides")
@@ -243,9 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               return Text("🚗 Rides Created: $count");
                             },
                           ),
-
                           const SizedBox(height: 6),
-
                           StreamBuilder<QuerySnapshot>(
                             stream: FirebaseFirestore.instance
                                 .collection("rides")
@@ -268,17 +247,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   "📍 Active Rides: $activeCount");
                             },
                           ),
-
                           const SizedBox(height: 6),
-
                           const Text("📅 Bookings: (coming soon)"),
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
-                    
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(15),
@@ -304,10 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
-                    
                     const Text(
                       "🚗 Recent Rides",
                       style: TextStyle(
@@ -315,9 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 10),
-
                     StreamBuilder<QuerySnapshot>(
                       stream: getRecentRides(),
                       builder: (context, snapshot) {
@@ -380,5 +349,4 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
     );
   }
-
-  
+}

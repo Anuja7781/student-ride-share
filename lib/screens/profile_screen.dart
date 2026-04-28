@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'login_screen.dart'; // ⭐ IMPORTANT
+import 'login_screen.dart'; 
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -83,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const Spacer(),
 
-            // 🔴 LOGOUT BUTTON (FIXED)
+            
             ElevatedButton(
               onPressed: () async {
 
