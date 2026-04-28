@@ -119,6 +119,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
         MaterialPageRoute(
           builder: (_) => RideTrackingScreen(
             rideData: widget.rideData,
+            rideId: widget.rideId,
             otp: otp,
           ),
         ),

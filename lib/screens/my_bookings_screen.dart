@@ -124,6 +124,7 @@ class MyBookingsScreen extends StatelessWidget {
                                     MaterialPageRoute(
                                       builder: (_) => RideTrackingScreen(
                                         rideData: data,
+                                        rideId: rideId,
                                         otp: otp ?? 0,
                                       ),
                                     ),
